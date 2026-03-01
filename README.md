@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pull (MVP)
 
-## Getting Started
+Pull is a journal-first social app:
+- quick tweet-style posting in a main feed
+- profile modules for projects, music, and movies/series
+- optional publish-to-feed toggle when adding profile items
+- item privacy (Public/Private)
+- discover tabs by category
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Next.js App Router (full-stack)
+- NextAuth (Google)
+- Prisma + SQLite (dev)
+- Tailwind CSS
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install dependencies:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+	npm install
 
-## Learn More
+2. Copy env file and set secrets:
 
-To learn more about Next.js, take a look at the following resources:
+	cp .env.example .env
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Fill OAuth variables in `.env`:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+	- `GOOGLE_CLIENT_ID`
+	- `GOOGLE_CLIENT_SECRET`
+	- `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` (`true` when configured, otherwise `false`)
+	- `NEXTAUTH_SECRET`
 
-## Deploy on Vercel
+4. Generate Prisma client and migrate database:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+	npm run prisma:generate
+	npm run prisma:migrate -- --name init
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. Start app:
+
+	npm run dev
+
+## Scripts
+
+- `npm run dev` - start development server
+- `npm run build` - production build
+- `npm run start` - run production server
+- `npm run typecheck` - TypeScript check
+- `npm run lint` - ESLint
+- `npm run prisma:generate` - generate Prisma client
+- `npm run prisma:migrate` - run Prisma migrations
+
+## Current MVP routes
+
+- `/feed`
+- `/u/[handle]`
+- `/discover/projects`
+- `/discover/music`
+- `/discover/movies-series`

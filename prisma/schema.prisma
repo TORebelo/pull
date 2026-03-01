@@ -1,0 +1,180 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Visibility {
+    PUBLIC
+    PRIVATE
+}
+
+enum ProfileItemType {
+    PROJECT
+    MUSIC
+    MOVIE_SERIES
+}
+
+model User {
+    id           String         @id @default(cuid())
+    email        String         @unique
+    name         String?
+    image        String?
+    handle       String         @unique
+    passwordHash String?
+    createdAt    DateTime       @default(now())
+    updatedAt    DateTime       @updatedAt
+    posts        Post[]
+    replies      PostReply[]
+    profileItems ProfileItem[]
+    likes        Like[]
+    pollVotes    PollVote[]
+    accounts     OAuthAccount[]
+}
+
+model OAuthAccount {
+    id                String   @id @default(cuid())
+    userId            String
+    provider          String
+    providerAccountId String
+    createdAt         DateTime @default(now())
+    user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+}
+
+model Post {
+    id                  String       @id @default(cuid())
+    authorId            String
+    content             String
+    embedUrl            String?
+    visibility          Visibility   @default(PUBLIC)
+    sourceProfileItemId String?
+    createdAt           DateTime     @default(now())
+    updatedAt           DateTime     @updatedAt
+    author              User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+    sourceProfileItem   ProfileItem? @relation("ProfileItemPost", fields: [sourceProfileItemId], references: [id], onDelete: SetNull)
+    likes               Like[]
+    replies             PostReply[]
+    topics              PostTopic[]
+    poll                Poll?
+
+    @@index([createdAt])
+    @@index([authorId])
+}
+
+model PostReply {
+    id            String      @id @default(cuid())
+    postId        String
+    userId        String
+    parentReplyId String?
+    content       String
+    embedUrl      String?
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @updatedAt
+    post          Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+    user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    parentReply   PostReply?  @relation("ReplyToReply", fields: [parentReplyId], references: [id], onDelete: Cascade)
+    childReplies  PostReply[] @relation("ReplyToReply")
+
+    @@index([postId, createdAt])
+    @@index([parentReplyId])
+    @@index([userId])
+}
+
+model Poll {
+    id        String       @id @default(cuid())
+    postId    String       @unique
+    question  String
+    createdAt DateTime     @default(now())
+    updatedAt DateTime     @updatedAt
+    post      Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+    options   PollOption[]
+    votes     PollVote[]
+}
+
+model PollOption {
+    id        String     @id @default(cuid())
+    pollId    String
+    text      String
+    createdAt DateTime   @default(now())
+    poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+    votes     PollVote[]
+
+    @@index([pollId])
+}
+
+model PollVote {
+    id        String     @id @default(cuid())
+    pollId    String
+    optionId  String
+    userId    String
+    createdAt DateTime   @default(now())
+    poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+    option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+    user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([pollId, userId])
+    @@index([optionId])
+    @@index([userId])
+}
+
+model ProfileItem {
+    id            String             @id @default(cuid())
+    userId        String
+    type          ProfileItemType
+    title         String
+    description   String?
+    url           String?
+    visibility    Visibility         @default(PUBLIC)
+    publishToFeed Boolean            @default(false)
+    createdAt     DateTime           @default(now())
+    updatedAt     DateTime           @updatedAt
+    user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+    posts         Post[]             @relation("ProfileItemPost")
+    topics        ProfileItemTopic[]
+
+    @@index([type, createdAt])
+    @@index([userId])
+}
+
+model Topic {
+    id                String             @id @default(cuid())
+    slug              String             @unique
+    label             String
+    postTopics        PostTopic[]
+    profileItemTopics ProfileItemTopic[]
+}
+
+model PostTopic {
+    postId  String
+    topicId String
+    post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+    topic   Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+    @@id([postId, topicId])
+}
+
+model ProfileItemTopic {
+    profileItemId String
+    topicId       String
+    profileItem   ProfileItem @relation(fields: [profileItemId], references: [id], onDelete: Cascade)
+    topic         Topic       @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+    @@id([profileItemId, topicId])
+}
+
+model Like {
+    id        String   @id @default(cuid())
+    userId    String
+    postId    String
+    createdAt DateTime @default(now())
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, postId])
+    @@index([postId])
+}
