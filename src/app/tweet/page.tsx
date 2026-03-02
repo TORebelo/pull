@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 
 import { QuickComposer } from "@/components/feed/quick-composer";

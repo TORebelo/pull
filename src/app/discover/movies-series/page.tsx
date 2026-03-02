@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function DiscoverMoviesSeriesPage() {
     const items = await prisma.profileItem.findMany({
         where: { type: "MOVIE_SERIES", visibility: "PUBLIC" },

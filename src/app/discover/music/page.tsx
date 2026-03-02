@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function DiscoverMusicPage() {
     const items = await prisma.profileItem.findMany({
         where: { type: "MUSIC", visibility: "PUBLIC" },
