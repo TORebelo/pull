@@ -13,13 +13,16 @@ export function AuthPanel() {
     const router = useRouter();
 
     const callbackUrl = searchParams.get("callbackUrl") ?? "/feed";
+    const urlError = searchParams.get("error");
 
     const [mode, setMode] = useState<Mode>("login");
     const googleEnabled = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === "true";
     const [email, setEmail] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+    const [error, setError] = useState(() =>
+        urlError ? "Invalid email or password." : "",
+    );
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const modeTitle = useMemo(
