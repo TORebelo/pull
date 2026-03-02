@@ -61,21 +61,28 @@ export function AuthPanel() {
                 });
 
                 if (!registerResponse.ok) {
-                    const payload = (await registerResponse.json()) as {
-                        error?: string | { fieldErrors?: Record<string, string[]> };
-                    };
+                    let errorMessage = "Registration failed.";
 
-                    const fieldMessage =
-                        typeof payload.error === "object"
-                            ? Object.values(payload.error.fieldErrors ?? {})
-                                .flat()
-                                .find((message) => Boolean(message))
-                            : undefined;
+                    try {
+                        const payload = (await registerResponse.json()) as {
+                            error?: string | { fieldErrors?: Record<string, string[]> };
+                        };
 
-                    throw new Error(
-                        (typeof payload.error === "string" ? payload.error : fieldMessage) ??
-                        "Registration failed.",
-                    );
+                        const fieldMessage =
+                            typeof payload.error === "object"
+                                ? Object.values(payload.error.fieldErrors ?? {})
+                                    .flat()
+                                    .find((message) => Boolean(message))
+                                : undefined;
+
+                        errorMessage =
+                            (typeof payload.error === "string" ? payload.error : fieldMessage) ??
+                            "Registration failed.";
+                    } catch {
+                        // Response was not JSON (e.g. 500 HTML page) — keep the default message
+                    }
+
+                    throw new Error(errorMessage);
                 }
             }
 
